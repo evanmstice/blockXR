@@ -29,8 +29,7 @@ def rescale_frame(frame, percent=75):
 if __name__ == "__main__":
     print("Press 'p' to capture an image, or 'q' to quit.")
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25) # TODO: Make manual exposure control more accessible to user
-    cap.set(cv2.CAP_PROP_EXPOSURE, -7)
+    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75) # Auto-exposure activation
     make_max_res(cap)
 
     while True:
