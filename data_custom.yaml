@@ -1,0 +1,6 @@
+train: /Users/evan/PycharmProjects/YoloTesting/train
+val: /Users/evan/PycharmProjects/YoloTesting/train
+
+nc: 6
+
+names: ["Repeat until", "Forward", "Left", "Right", "End loop", "When clicked"]
