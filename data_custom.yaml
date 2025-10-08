@@ -1,5 +1,5 @@
-train: /Users/evan/PycharmProjects/YoloTesting/train
-val: /Users/evan/PycharmProjects/YoloTesting/train
+train: ./data/train
+val: ./data/val
 
 nc: 6
 

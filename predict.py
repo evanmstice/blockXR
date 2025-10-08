@@ -7,7 +7,7 @@ class Block:
         self.yPosTop = yPosTop
         self.yPosBottom = yPosBottom
 
-model = YOLO("yolo11n_custom_new.pt")
+model = YOLO("block_weights.pt")
 
 # Testing with a single photo
 results = model.predict(source="test.png", save=True, conf=0.5)
@@ -22,9 +22,6 @@ for block in detected:
     blocks.append(Block(model.names[int(block.cls[0].item())], xPos, coordinates[1], coordinates[3]))
 
 blocks.sort(key=lambda b: b.yPosTop)
-
-for block in blocks:
-    print(block.name, block.yPosTop, block.yPosBottom)
 
 toleranceX = 75
 toleranceY = 10  # Add later: auto tolerance, could start program by checking width of blocks in relation to camera view and then
