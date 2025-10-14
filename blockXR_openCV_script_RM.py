@@ -47,25 +47,25 @@ if __name__ == "__main__":
         frame = rescale_frame(frame)
 
         # running yolo detection on the frame - RM
-        #results = model(frame, stream = True)
-        #cv2.imshow("Camera Feed", frame)
+        results = model(frame, stream = True)
+        cv2.imshow("Camera Feed", frame)
 
         # creates the boxes around each detected object - RM
-        # for r in results:
-        #     boxes = r.boxes
-        #     for box in boxes:
-        #         # getting the coordinates of the box - RM
-        #         x1, y1, x2, y2 = box.xyxy[0]
-        #         x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-        #         # confidence of the object detection - RM
-        #         conf = box.conf[0].item()
-        #         # class of the object detected - RM
-        #         cls = int(box.cls[0].item())
-        #         # maps the class to a label we understand, forward, left, right, etc - RM
-        #         label = model.names[cls]
-        #         # this draws the boxes around the objects and labels them- RM
-        #         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        #         cv2.putText(frame, f"{label}{conf:.2f}", (x1, y1-10), cv2.FONT_HERSHEY_PLAIN, 0.7, (0, 255, 0), 2)
+        for r in results:
+            boxes = r.boxes
+            for box in boxes:
+                # getting the coordinates of the box - RM
+                x1, y1, x2, y2 = box.xyxy[0]
+                x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+                # confidence of the object detection - RM
+                conf = box.conf[0].item()
+                # class of the object detected - RM
+                cls = int(box.cls[0].item())
+                # maps the class to a label we understand, forward, left, right, etc - RM
+                label = model.names[cls]
+                # this draws the boxes around the objects and labels them- RM
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(frame, f"{label}{conf:.2f}", (x1, y1-10), cv2.FONT_HERSHEY_PLAIN, 0.7, (0, 255, 0), 2)
 
 
         # show the frame with the detection - RM
@@ -75,21 +75,21 @@ if __name__ == "__main__":
 
         if key == ord('q'):
             break
-        elif key == ord('p'):
-            if not ret or frame is None or frame.size == 0:
-                print("Failed to capture image.")
-                continue
-            else:
-                print("Frame captured successfully")
+        # elif key == ord('p'):
+        #     if not ret or frame is None or frame.size == 0:
+        #         print("Failed to capture image.")
+        #         continue
+        #     else:
+        #         print("Frame captured successfully")
 
-            # save frame
-            while True:
-                filename = "frame" + str(file_counter) + ".jpg"
-                if os.path.exists(filename):
-                    file_counter += 1
-                else:
-                    break
-            cv2.imwrite(filename, frame)
+        #     # save frame
+        #     while True:
+        #         filename = "frame" + str(file_counter) + ".jpg"
+        #         if os.path.exists(filename):
+        #             file_counter += 1
+        #         else:
+        #             break
+        #     cv2.imwrite(filename, frame)
 
     # cleanup
     cap.release()
