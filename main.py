@@ -1,4 +1,5 @@
 from ultralytics import YOLO
 
-model = YOLO("yolov8s.pt")
-model.train(data="config.yaml", epochs=50)
+model = YOLO("/yolo11n_custom_new.pt")
+
+model.train(data="data_custom.yaml", epochs=50)
