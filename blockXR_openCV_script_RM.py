@@ -1,6 +1,11 @@
 import cv2
 import time
 import os
+from ultralytics import YOLO
+
+# Loading the model we have trained - RM
+model = YOLO("yolo11n_custom_new.pt")
+
 
 # change camera resolution
 def make_max_res(cap):
@@ -27,18 +32,44 @@ def rescale_frame(frame, percent=75):
     return cv2.resize(frame, dim, interpolation =cv2.INTER_AREA)
 
 if __name__ == "__main__":
-    print("Press 'p' to capture an image, or 'q' to quit.")
-    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    print("Press 'q' to quit.")
+    cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
     cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75) # Auto-exposure activation
     make_max_res(cap)
 
     while True:
         file_counter = 1
         ret, frame = cap.read()
+        if not ret:
+            break
+
         frame = cv2.rotate(frame, cv2.ROTATE_180) # frame flip since webcam is upside down
         frame = rescale_frame(frame)
-        cv2.imshow("Camera Feed", frame)
 
+        # running yolo detection on the frame - RM
+        #results = model(frame, stream = True)
+        #cv2.imshow("Camera Feed", frame)
+
+        # creates the boxes around each detected object - RM
+        # for r in results:
+        #     boxes = r.boxes
+        #     for box in boxes:
+        #         # getting the coordinates of the box - RM
+        #         x1, y1, x2, y2 = box.xyxy[0]
+        #         x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+        #         # confidence of the object detection - RM
+        #         conf = box.conf[0].item()
+        #         # class of the object detected - RM
+        #         cls = int(box.cls[0].item())
+        #         # maps the class to a label we understand, forward, left, right, etc - RM
+        #         label = model.names[cls]
+        #         # this draws the boxes around the objects and labels them- RM
+        #         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        #         cv2.putText(frame, f"{label}{conf:.2f}", (x1, y1-10), cv2.FONT_HERSHEY_PLAIN, 0.7, (0, 255, 0), 2)
+
+
+        # show the frame with the detection - RM
+        cv2.imshow("Live Feed", frame)
         # begin waiting for user input
         key = cv2.waitKey(1) & 0xFF
 
