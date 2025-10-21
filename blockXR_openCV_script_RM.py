@@ -2,9 +2,10 @@ import cv2
 import time
 import os
 from ultralytics import YOLO
+import predict
 
 # Loading the model we have trained - RM
-model = YOLO("yolo11n_custom_new.pt")
+model = YOLO("block_weights.pt")
 
 
 # change camera resolution
@@ -32,9 +33,24 @@ def rescale_frame(frame, percent=75):
     return cv2.resize(frame, dim, interpolation =cv2.INTER_AREA)
 
 if __name__ == "__main__":
-    print("Press 'q' to quit.")
+    print("Press 'q' to quit. Press 'p' to process the current frame.")
     cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
-    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75) # Auto-exposure activation
+    #cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75) # Auto-exposure activation
+    
+    # Step 1: Enable auto exposure temporarily
+    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75)
+    time.sleep(1.0)  # give the camera a moment to adjust
+
+    # Step 2: Read the automatically determined exposure value
+    auto_exposure_value = cap.get(cv2.CAP_PROP_EXPOSURE)
+    print("Auto exposure value:", auto_exposure_value)
+
+    # Step 3: Switch to manual mode and apply an offset
+    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)  # turn off auto
+    offset = 0.5
+    cap.set(cv2.CAP_PROP_EXPOSURE, auto_exposure_value + offset)
+
+    
     make_max_res(cap)
 
     while True:
@@ -75,6 +91,16 @@ if __name__ == "__main__":
 
         if key == ord('q'):
             break
+        elif key == ord('p'):
+            # this will save the current frame as an image and we can run predict.py on it - RM
+            filename = "frame" + str(file_counter) + ".jpg"
+            if os.path.exists(filename):
+                file_counter += 1
+            else:
+                cv2.imwrite(filename, frame)
+                predict.run_predict(filename)
+        
+
         # elif key == ord('p'):
         #     if not ret or frame is None or frame.size == 0:
         #         print("Failed to capture image.")
