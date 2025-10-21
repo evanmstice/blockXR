@@ -1,11 +1,12 @@
 from ultralytics import YOLO
 import os
 class Block:
-    def __init__(self, name, xPos, yPosTop, yPosBottom):
+    def __init__(self, name, xPos, yPosTop, yPosBottom, confidence):
         self.name = name
         self.xPos = xPos
         self.yPosTop = yPosTop
         self.yPosBottom = yPosBottom
+        self.confidence = confidence
 
 def run_predict(image_path):
 
@@ -115,32 +116,38 @@ if __name__ == "__main__":
 #     msg = f"Detected: {name:<15} | Confidence: {confidence:.2f} | Box: {coordinates}\n"
 #     log_file.write(msg)
 
+def getBlocks(data) -> list[Block]:
 
+    blocks = []
 
-# blocks.sort(key=lambda b: b.yPosTop)
+    # Extracting bounding box data and loading into Block class objects
+    # data: detected = results[0].boxes
+    for block in data:
+        coordinates = block.xyxy.tolist()[0]
+        xPos = coordinates[0] + (coordinates[2] - coordinates[0]) / 2  # centered x position of block
+        blocks.append(Block(model.names[int(block.cls[0].item())], xPos, coordinates[1], coordinates[3], block.conf[0].item()))
 
-# toleranceX = 75
-# toleranceY = 10  # Add later: auto tolerance, could start program by checking width of blocks in relation to camera view and then
-#                 # have tolerance be a percentage of that
+    blocks.sort(key=lambda b: b.yPosTop)
 
-# codeBlocksFinal = []
-# whenClickedIndice = next((i for i, b in enumerate(blocks) if b.name == "When clicked"), None)
-# if whenClickedIndice is None:
-#     raise KeyError("Error: When clicked block not found.")
+    toleranceX = 200
+    toleranceY = 10  # Add later: auto tolerance, could start program by checking width of blocks in relation to camera view and then
+                    # have tolerance be a percentage of that
 
-# codeBlocksFinal.append("When clicked")
-# currXPos = blocks[whenClickedIndice].xPos
-# currYPos = blocks[whenClickedIndice].yPosBottom
-# for block in blocks[whenClickedIndice + 1:]:
-#     # check if block below is snapped together
-#     if (currYPos - toleranceY <= block.yPosTop <= currYPos + toleranceY) and (currXPos - toleranceX <= block.xPos <= currXPos + toleranceX):
-#         codeBlocksFinal.append(block.name)
-#         currYPos = block.yPosBottom
-#         currXPos = block.xPos
-#     else:
-#         break
+    codeBlocksFinal = []
+    whenClickedIndice = next((i for i, b in enumerate(blocks) if b.name == "When clicked"), None)
+    if whenClickedIndice is None:
+        raise KeyError("Error: When clicked block not found.")
 
-# #print("\nFinal Block Sequence:", codeBlocksFinal)
-# final_msg = f"Final Block Sequence: {codeBlocksFinal}\n{'-'*80}\n"
-# log_file.write(final_msg)
-# log_file.close()
+    codeBlocksFinal.append(["When clicked", blocks[whenClickedIndice].confidence])
+    currXPos = blocks[whenClickedIndice].xPos
+    currYPos = blocks[whenClickedIndice].yPosBottom
+    for block in blocks[whenClickedIndice + 1:]:
+        # check if block below is snapped together
+        if (currYPos - toleranceY <= block.yPosTop <= currYPos + toleranceY) and (currXPos - toleranceX <= block.xPos <= currXPos + toleranceX):
+            codeBlocksFinal.append([block.name, block.confidence])
+            currYPos = block.yPosBottom
+            currXPos = block.xPos
+        else:
+            break
+
+    return codeBlocksFinal

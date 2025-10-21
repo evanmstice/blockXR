@@ -3,6 +3,20 @@ import time
 import os
 from ultralytics import YOLO
 import predict
+from rich.live import Live
+from rich.table import Table
+from predict import getBlocks
+
+def make_table(blocks):
+    table = Table(title="Detected Blocks")
+    table.add_column("Block", justify="center", style="cyan")
+    table.add_column("Confidence", justify="center", style="magenta")
+
+    for item in blocks:
+        label = str(item[0])
+        confidence = f"{float(item[1]):.2f}"
+        table.add_row(label, confidence)
+    return table
 
 # Loading the model we have trained - RM
 model = YOLO("block_weights.pt")
@@ -34,7 +48,7 @@ def rescale_frame(frame, percent=75):
 
 if __name__ == "__main__":
     print("Press 'q' to quit. Press 'p' to process the current frame.")
-    cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+    cap = cv2.VideoCapture(0)
     #cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75) # Auto-exposure activation
     
     # Step 1: Enable auto exposure temporarily
@@ -53,70 +67,76 @@ if __name__ == "__main__":
     
     make_max_res(cap)
 
-    while True:
-        file_counter = 1
-        ret, frame = cap.read()
-        if not ret:
-            break
+    with Live(make_table([]), refresh_per_second=4, screen=False) as live:
+        while True:
+            file_counter = 1
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-        frame = cv2.rotate(frame, cv2.ROTATE_180) # frame flip since webcam is upside down
-        frame = rescale_frame(frame)
+            #frame = cv2.rotate(frame, cv2.ROTATE_180) # frame flip since webcam is upside down
+            frame = rescale_frame(frame)
 
-        # running yolo detection on the frame - RM
-        results = model(frame, stream = True)
-        cv2.imshow("Camera Feed", frame)
+            # running yolo detection on the frame - RM
+            results = model(frame, stream = True, verbose=False)
+            cv2.imshow("Camera Feed", frame)
 
-        # creates the boxes around each detected object - RM
-        for r in results:
-            boxes = r.boxes
-            for box in boxes:
-                # getting the coordinates of the box - RM
-                x1, y1, x2, y2 = box.xyxy[0]
-                x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-                # confidence of the object detection - RM
-                conf = box.conf[0].item()
-                # class of the object detected - RM
-                cls = int(box.cls[0].item())
-                # maps the class to a label we understand, forward, left, right, etc - RM
-                label = model.names[cls]
-                # this draws the boxes around the objects and labels them- RM
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.putText(frame, f"{label}{conf:.2f}", (x1, y1-10), cv2.FONT_HERSHEY_PLAIN, 0.7, (0, 255, 0), 2)
+            # creates the boxes around each detected object - RM
+            blocks = []
+            for r in results:
+                boxes = r.boxes
+                for box in boxes:
+                    # getting the coordinates of the box - RM
+                    x1, y1, x2, y2 = box.xyxy[0]
+                    x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+                    # confidence of the object detection - RM
+                    conf = box.conf[0].item()
+                    # class of the object detected - RM
+                    cls = int(box.cls[0].item())
+                    # maps the class to a label we understand, forward, left, right, etc - RM
+                    label = model.names[cls]
+                    # this draws the boxes around the objects and labels them- RM
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    cv2.putText(frame, f"{label}{conf:.2f}", (x1, y1-10), cv2.FONT_HERSHEY_PLAIN, 0.7, (0, 255, 0), 2)
+                try:
+                    blocks = getBlocks(boxes)
+                except KeyError as e:
+                    pass
+                    
+            live.update(make_table(blocks))
+            # show the frame with the detection - RM
+            cv2.imshow("Live Feed", frame)
+            # begin waiting for user input
+            key = cv2.waitKey(1) & 0xFF
 
+            if key == ord('q'):
+                break
+            elif key == ord('p'):
+                # this will save the current frame as an image and we can run predict.py on it - RM
+                filename = "frame" + str(file_counter) + ".jpg"
+                if os.path.exists(filename):
+                    file_counter += 1
+                else:
+                    cv2.imwrite(filename, frame)
+                    predict.run_predict(filename)
+            
 
-        # show the frame with the detection - RM
-        cv2.imshow("Live Feed", frame)
-        # begin waiting for user input
-        key = cv2.waitKey(1) & 0xFF
+            # elif key == ord('p'):
+            #     if not ret or frame is None or frame.size == 0:
+            #         print("Failed to capture image.")
+            #         continue
+            #     else:
+            #         print("Frame captured successfully")
 
-        if key == ord('q'):
-            break
-        elif key == ord('p'):
-            # this will save the current frame as an image and we can run predict.py on it - RM
-            filename = "frame" + str(file_counter) + ".jpg"
-            if os.path.exists(filename):
-                file_counter += 1
-            else:
-                cv2.imwrite(filename, frame)
-                predict.run_predict(filename)
-        
+            #     # save frame
+            #     while True:
+            #         filename = "frame" + str(file_counter) + ".jpg"
+            #         if os.path.exists(filename):
+            #             file_counter += 1
+            #         else:
+            #             break
+            #     cv2.imwrite(filename, frame)
 
-        # elif key == ord('p'):
-        #     if not ret or frame is None or frame.size == 0:
-        #         print("Failed to capture image.")
-        #         continue
-        #     else:
-        #         print("Frame captured successfully")
-
-        #     # save frame
-        #     while True:
-        #         filename = "frame" + str(file_counter) + ".jpg"
-        #         if os.path.exists(filename):
-        #             file_counter += 1
-        #         else:
-        #             break
-        #     cv2.imwrite(filename, frame)
-
-    # cleanup
-    cap.release()
-    cv2.destroyAllWindows()
+        # cleanup
+        cap.release()
+        cv2.destroyAllWindows()
