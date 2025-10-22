@@ -79,7 +79,6 @@ if __name__ == "__main__":
 
             # running yolo detection on the frame - RM
             results = model(frame, stream = True, verbose=False)
-            cv2.imshow("Camera Feed", frame)
 
             # creates the boxes around each detected object - RM
             blocks = []
