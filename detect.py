@@ -1,6 +1,7 @@
 import cv2
 from ultralytics import YOLO
 from predict import getBlocks
+from time import sleep
 
 model = YOLO("block_weights.pt")
 
@@ -8,20 +9,22 @@ model = YOLO("block_weights.pt")
 
 def detect_blocks():
     cap = cv2.VideoCapture(0)
-    while True:
-        ret, frame = cap.read()
-        cap.release()
-        results = model(frame, stream=True, verbose=False)
-        blocks =[]
+    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75)
+    # sleep(5) # allow camera to adjust
+    ret, frame = cap.read()
+    cap.release()
+    results = model(frame, stream=True, verbose=False)
+    blocks =[]
 
+    if results:
         for r in results:
-            for box in r.boxes:
-                pass
             try:
                 blocks = getBlocks(r.boxes)
-            except:
-                blocks =[]
+                return blocks
+            except KeyError as e:
+                print(e)
+                return []
 
-        print("Blocks detected: ", blocks)
-        return blocks
-        
+    print("Blocks detected: ", blocks)
+    return blocks
+    

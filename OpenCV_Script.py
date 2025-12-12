@@ -2,10 +2,10 @@ import cv2
 import time
 import os
 from ultralytics import YOLO
-import predict
 from rich.live import Live
 from rich.table import Table
 from predict import getBlocks
+
 
 def make_table(blocks):
     table = Table(title="Detected Blocks")
@@ -21,24 +21,6 @@ def make_table(blocks):
 # Loading the model we have trained - RM
 model = YOLO("block_weights.pt")
 
-
-# change camera resolution
-def make_max_res(cap):
-    cap.set(3, 1920)
-    cap.set(4, 1440)
-
-def make_1080p(cap):
-    cap.set(3, 1920)
-    cap.set(4, 1080)
-
-def make_480p(cap):
-    cap.set(3, 640)
-    cap.set(4, 480)
-
-def change_res(cap, width, height):
-    cap.set(3, width)
-    cap.set(4, height)
-
 # adjust viewport size on high resolutions
 def rescale_frame(frame, percent=75):
     width = int(frame.shape[1] * percent/ 100)
@@ -46,11 +28,31 @@ def rescale_frame(frame, percent=75):
     dim = (width, height)
     return cv2.resize(frame, dim, interpolation =cv2.INTER_AREA)
 
+# main YOLO prediction function - ES
+# TODO: Add normalization for detection inaccuracies (multiple photos, averaged)
+def predict_frame() -> list:
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75)
+    ret, frame = cap.read()
+    results = model(frame, stream = True, verbose=False)
+
+    if results:
+        for r in results:
+            boxes = r.boxes
+            try:
+                blocks = getBlocks(boxes)
+                return blocks
+            except KeyError as e:
+                print(e)
+                return []
+    return []
+
+
+# running function as main will output table with blocks to terminal for debugging
 if __name__ == "__main__":
     print("Press 'q' to quit. Press 'p' to process the current frame.")
-    cap = cv2.VideoCapture(0)
-    #cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75) # Auto-exposure activation
-    
+    cap = cv2.VideoCapture(0)    
+
     # Step 1: Enable auto exposure temporarily
     cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75)
     time.sleep(1.0)  # give the camera a moment to adjust
@@ -64,9 +66,6 @@ if __name__ == "__main__":
     offset = 0.5
     cap.set(cv2.CAP_PROP_EXPOSURE, auto_exposure_value + offset)
 
-    
-    make_max_res(cap)
-
     with Live(make_table([]), refresh_per_second=4, screen=False) as live:
         while True:
             file_counter = 1
@@ -74,7 +73,7 @@ if __name__ == "__main__":
             if not ret:
                 break
 
-            #frame = cv2.rotate(frame, cv2.ROTATE_180) # frame flip since webcam is upside down
+            frame = cv2.rotate(frame, cv2.ROTATE_180) # frame flip since webcam is upside down
             frame = rescale_frame(frame)
 
             # running yolo detection on the frame - RM
@@ -118,23 +117,6 @@ if __name__ == "__main__":
                 else:
                     cv2.imwrite(filename, frame)
                     predict.run_predict(filename)
-            
-
-            # elif key == ord('p'):
-            #     if not ret or frame is None or frame.size == 0:
-            #         print("Failed to capture image.")
-            #         continue
-            #     else:
-            #         print("Frame captured successfully")
-
-            #     # save frame
-            #     while True:
-            #         filename = "frame" + str(file_counter) + ".jpg"
-            #         if os.path.exists(filename):
-            #             file_counter += 1
-            #         else:
-            #             break
-            #     cv2.imwrite(filename, frame)
 
         # cleanup
         cap.release()

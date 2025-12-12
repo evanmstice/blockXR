@@ -7,11 +7,13 @@ from detect import detect_blocks
 
 def req_handler(addr, *args):
     
-    #blocks = detect_blocks()
-    blocks = ["move_forward", "turn_left", "turn_right"]
+    blocks = detect_blocks()
+    blockNames = [block[0] for block in blocks]
+    print(blocks)
+    # blocks = ["move_forward", "turn_left", "turn_right"]
 
     client = SimpleUDPClient('127.0.0.1', 7001)
-    client.send_message("/program", blocks)
+    client.send_message("/program", blockNames)
 
 
 dispatcher = Dispatcher()

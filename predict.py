@@ -1,5 +1,5 @@
 from ultralytics import YOLO
-import os
+
 class Block:
     def __init__(self, name, xPos, yPosTop, yPosBottom, confidence):
         self.name = name
@@ -27,8 +27,8 @@ def getBlocks(data) -> list[Block]:
 
     # default values
     blocks = []
-    toleranceX = 100
-    toleranceY = 20 
+    toleranceX = 150
+    toleranceY = 30
 
     # Extracting bounding box data and loading into Block class objects
     for block in data:
