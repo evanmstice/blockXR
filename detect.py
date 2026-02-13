@@ -252,49 +252,50 @@ def detect_blocks(debug=False):
         results = model(frame, stream=True, verbose=False)
         blocks = []
 
-        for r in results:
-            boxes = r.boxes
+        if results:
+            for r in results:
+                boxes = r.boxes
+
+                if debug:
+                    for box in boxes:
+                        x1, y1, x2, y2 = box.xyxy[0]
+                        x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
+
+                        conf = box.conf[0].item()
+                        cls = int(box.cls[0].item())
+                        label = model.names[cls]
+
+                        cv2.rectangle(frame, (x1, y1), (x2, y2),
+                                    (0, 255, 0), 2)
+
+                        cv2.putText(frame,
+                                    f"{label} {conf:.2f}",
+                                    (x1, y1 - 10),
+                                    cv2.FONT_HERSHEY_PLAIN,
+                                    0.7,
+                                    (0, 255, 0),
+                                    1)
+
+                try:
+                    blocks = getBlocks(boxes)
+                except KeyError:
+                    blocks = []
 
             if debug:
-                for box in boxes:
-                    x1, y1, x2, y2 = box.xyxy[0]
-                    x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
+                frame = make_table(frame, blocks)
+                frame = rescale_frame(frame, percent=75)
+                cv2.imshow("Live Feed", frame)
 
-                    conf = box.conf[0].item()
-                    cls = int(box.cls[0].item())
-                    label = model.names[cls]
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+            else:
+                cap.release()
+                return blocks
 
-                    cv2.rectangle(frame, (x1, y1), (x2, y2),
-                                  (0, 255, 0), 2)
+        cap.release()
+        cv2.destroyAllWindows()
 
-                    cv2.putText(frame,
-                                f"{label} {conf:.2f}",
-                                (x1, y1 - 10),
-                                cv2.FONT_HERSHEY_PLAIN,
-                                0.7,
-                                (0, 255, 0),
-                                1)
-
-            try:
-                blocks = getBlocks(boxes)
-            except KeyError:
-                blocks = []
-
-        if debug:
-            frame = make_table(frame, blocks)
-            frame = rescale_frame(frame, percent=75)
-            cv2.imshow("Live Feed", frame)
-
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-        else:
-            cap.release()
-            return blocks
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-    return blocks
+        return blocks
 
 
 # Running this script directly will enter the visual debugger
