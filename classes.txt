@@ -1,6 +1,0 @@
-Repeat until
-Forward
-Left
-Right
-End loop
-When clicked

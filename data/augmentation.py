@@ -12,7 +12,6 @@ os.makedirs(os.path.join(AUG_DIR, "labels"), exist_ok=True)
 
 # Define augmentation pipeline
 transform = A.Compose([
-    
     A.HorizontalFlip(p=0.5),
     A.VerticalFlip(p=0.2),
     A.RandomScale(scale_limit=0.2, p=0.5),
@@ -73,6 +72,7 @@ def augment_split(split, num_augments=3):
 
             print(f"Saved {new_name}")
 
-# Run on both train and val
-augment_split("train", num_augments=3)
-augment_split("val", num_augments=2)
+
+if __name__ == "__main__":
+    augment_split("train", num_augments=3)
+    augment_split("val", num_augments=2)
