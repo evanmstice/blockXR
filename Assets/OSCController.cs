@@ -9,6 +9,7 @@ namespace extOSC.Examples
 {
 	public class OSCController : MonoBehaviour
 	{
+		public PlayerMovement playerMovement;
 		// public GameObject ProgrammingEnv;
 		// public GameObject BEController;
 		// public GameObject mainPanel;
@@ -30,6 +31,9 @@ namespace extOSC.Examples
 		private const int STARTUP = 3;
 		private const int QUIT = 4;
 
+		// boolean tracks whether program is running, ensures that only one program runs when the user presses run
+		private bool isRunning = false;
+
 		// width and height of viewport in unity
 		//public const float UNITY_WIDTH = (float)949.0001;
 		public float UNITY_WIDTH = Screen.width;
@@ -39,6 +43,18 @@ namespace extOSC.Examples
 		#endregion
 
 		#region Unity Methods
+
+		//TESTING CODE
+		[ContextMenu("Test: Move Forward")]
+		public void TestMoveForward()
+		{
+			List<string> testBlocks = new List<string>(){
+
+				"Forward",
+				"Forward"
+			};
+			StartCoroutine(ExecuteBlocks(testBlocks));
+		}
 
 		protected virtual void Start()
 		{
@@ -172,19 +188,45 @@ namespace extOSC.Examples
 			if (blockList.Count == 0)
 			{
 				Debug.Log("No blocks detected!");
-				// menuMessage.text = noBlocksMessage;
-        		// mainPanel.SetActive(true);
-				// BEController.GetComponent<BEController>().loadingAnimation.enabled = false;
 			}
 			else
 			{
 				Debug.Log("Received " + blockList.Count + " blocks: ");
+				
 				// TODO: Send the blockList to movement script
+				// the use of coroutine allows there to be a delay between each block
+				StartCoroutine(ExecuteBlocks(blockList));
 				
 			}
 
 			state = STARTUP;
 		}
+
+		// coroutine to execute the list of blocks with delays between each block
+		private IEnumerator ExecuteBlocks(List<string> blockList)
+		{
+			// stops overlapping coroutines
+			if(isRunning == true){
+				yield break;
+			}
+			// creates a lock so that only one coroutine can run at a time
+			isRunning = true;
+			
+			foreach (string block in blockList)
+			{
+				// if (block == "When clicked"){
+				// 	run = true;
+				// 	continue;
+				// }
+				if (block == "Forward"){
+					playerMovement.MoveForward();
+					yield return new WaitForSeconds(0.2f);
+				}
+				
+			}
+			isRunning = false;
+		}
+		
 
 		#endregion
 	}
