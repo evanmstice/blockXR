@@ -3,3 +3,5 @@ data/train/labels.cache
 data/val/labels.cache
 .venv/
 .DS_Store
+__pycache__/
+*.pyc
