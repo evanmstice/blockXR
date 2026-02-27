@@ -1,13 +1,16 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Tilemaps;
 
 public class PlayerMovement : MonoBehaviour
 {
     // can adjust how big the step are within the inspector
     public float step = 1f;
     public float speed = 1f;
+    public Tilemap pathTilemap;
 
     private Animator animator;
+    
 
     public enum Direction
     {
@@ -66,6 +69,15 @@ public class PlayerMovement : MonoBehaviour
 
         // sets the dog's position to the end position
         transform.position = endPos;
+
+        Vector3Int cellPosition = pathTilemap.WorldToCell(transform.position);
+        TileBase tile = pathTilemap.GetTile(cellPosition);
+
+        if (tile == null){
+            Debug.Log("Dog has left the path");
+
+            // TODO: Add a wrong block order try again
+        }
 
     UpdateIdleAnimation();
     }

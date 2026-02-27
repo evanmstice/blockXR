@@ -52,8 +52,7 @@ namespace extOSC.Examples
 
 				"Forward",
 				"Forward",
-				"Right",
-				"Forward"
+
 			};
 			StartCoroutine(ExecuteBlocks(testBlocks));
 		}
