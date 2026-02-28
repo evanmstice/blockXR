@@ -1,6 +1,7 @@
 import cv2
 import time
 import threading
+from matplotlib.pylab import block
 from ultralytics import YOLO
 
 model = YOLO("block_weights.pt")
@@ -183,6 +184,10 @@ def getBlocks(data):
     blocks = []
 
     for block in data:
+        conf = block.conf[0].item()
+        if conf < 0.6:
+            continue
+
         coordinates = block.xyxy.tolist()[0]
         xPos = coordinates[0] + (coordinates[2] - coordinates[0]) / 2
 
@@ -258,10 +263,13 @@ def detect_blocks(debug=False):
 
                 if debug:
                     for box in boxes:
+                        conf = box.conf[0].item()
+                        if conf < 0.6:
+                            continue
+
                         x1, y1, x2, y2 = box.xyxy[0]
                         x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
 
-                        conf = box.conf[0].item()
                         cls = int(box.cls[0].item())
                         label = model.names[cls]
 
