@@ -1,5 +1,13 @@
-# This .gitignore file should be placed at the root of your Unity project directory
-#
+## BACKEND GITIGNORE ##
+
+runs/
+data/train/labels.cache
+data/val/labels.cache
+.venv/
+.DS_Store
+
+## UNITY GITIGNORE ##
+
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
 .utmp/
