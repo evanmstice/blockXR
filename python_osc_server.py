@@ -6,7 +6,7 @@ def run_osc_server(detector):
 
     # sends data to unity
     def req_handler(addr, *args):
-        blocks = detector.getBlocks()
+        blocks = detector.get_blocks()
         client = SimpleUDPClient('127.0.0.1', 7001)
         client.send_message("/program", blocks)
 
