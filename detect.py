@@ -210,6 +210,7 @@ def getBlocks(data):
 
     if whenClickedIndice is None:
         raise KeyError("When clicked block not found.")
+        return []
 
     codeBlocksFinal.append(
         ["When clicked", blocks[whenClickedIndice].confidence]
