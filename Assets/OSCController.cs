@@ -31,8 +31,24 @@ namespace extOSC.Examples
 
 		#region Unity Methods
 
-		protected virtual void Start() {
-			// Setup Transmitter (Unity to Python)
+		//TESTING CODE
+		[ContextMenu("Test: Move Forward")]
+		public void TestMoveForward()
+		{
+			List<string> testBlocks = new List<string>(){
+
+				"Forward",
+				"Forward",
+
+			};
+			StartCoroutine(ExecuteBlocks(testBlocks));
+		}
+
+		protected virtual void Start()
+		{
+			Debug.Log(Screen.width);
+			Debug.Log(Screen.height);
+			// Creating a transmitter.
 			_transmitter = gameObject.AddComponent<OSCTransmitter>();
 			_transmitter.RemoteHost = "127.0.0.1";
 			_transmitter.RemotePort = 31415;
@@ -156,15 +172,18 @@ namespace extOSC.Examples
 			
 			foreach (string block in blockList) {
 				if (block == "Forward"){
+
 					// waits for this movement to finish before moving on to next block
 					yield return StartCoroutine(playerMovement.MoveForward());
 					yield return new WaitForSeconds(0.2f);
 				}
-				if (block == "Right") {
+				if (block == "Right")
+				{
 					playerMovement.TurnRight();
 					yield return new WaitForSeconds(0.2f);
 				}
-				if (block == "Left") {
+				if (block == "Left")
+				{
 					playerMovement.TurnLeft();
 					yield return new WaitForSeconds(0.2f);
 				}

@@ -31,7 +31,6 @@ public class PlayerMovement : MonoBehaviour
     public IEnumerator MoveForward()
     {
 
-        Debug.Log("MoveForward Coroutine Started!");
         Vector3 movementDirection = Vector3.zero;
 
         switch (currentDirection)
@@ -55,6 +54,9 @@ public class PlayerMovement : MonoBehaviour
             
         }
 
+
+    
+        // transform.right moves the dog in the position that it is facing
         Vector3 endPos = transform.position + movementDirection * step;
         
         
