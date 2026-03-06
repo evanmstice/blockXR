@@ -51,7 +51,8 @@ namespace extOSC.Examples
 			List<string> testBlocks = new List<string>(){
 
 				"Forward",
-				"Forward"
+				"Forward",
+
 			};
 			StartCoroutine(ExecuteBlocks(testBlocks));
 		}
@@ -218,7 +219,19 @@ namespace extOSC.Examples
 				// 	continue;
 				// }
 				if (block == "Forward"){
-					playerMovement.MoveForward();
+
+					// waits for this movement to finish before moving on to next block
+					yield return StartCoroutine(playerMovement.MoveForward());
+					yield return new WaitForSeconds(0.2f);
+				}
+				if (block == "Right")
+				{
+					playerMovement.TurnRight();
+					yield return new WaitForSeconds(0.2f);
+				}
+				if (block == "Left")
+				{
+					playerMovement.TurnLeft();
 					yield return new WaitForSeconds(0.2f);
 				}
 				
