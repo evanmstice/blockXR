@@ -10,6 +10,7 @@ public class PlayerMovement : MonoBehaviour
     public Tilemap pathTilemap;
 
     private Animator animator;
+    private Rigidbody2D rb;
     
 
     public enum Direction
@@ -26,6 +27,7 @@ public class PlayerMovement : MonoBehaviour
     // to the same object, stores it in the animator variable
     void Awake(){
         animator = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody2D>();
     }
 
     public IEnumerator MoveForward()
@@ -63,12 +65,15 @@ public class PlayerMovement : MonoBehaviour
         // runs every frame until the dog reaches the end position
         while(Vector3.Distance(transform.position, endPos) > 0.01f){
             // movetowards moves the dog from the start position to the end position by a fixed amount per frame
-            transform.position = Vector3.MoveTowards(transform.position, endPos, speed * Time.deltaTime);
-            yield return null;
+            //transform.position = Vector3.MoveTowards(transform.position, endPos, speed * Time.deltaTime);
+            Vector2 newPos = Vector2.MoveTowards(transform.position, endPos, speed * Time.deltaTime);
+            rb.MovePosition(newPos);
+            yield return new WaitForFixedUpdate();
         }
 
         // sets the dog's position to the end position
-        transform.position = endPos;
+        // transform.position = endPos;
+        rb.MovePosition(endPos);
 
         Vector3Int cellPosition = pathTilemap.WorldToCell(transform.position);
         TileBase tile = pathTilemap.GetTile(cellPosition);
