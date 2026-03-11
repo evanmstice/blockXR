@@ -10,10 +10,7 @@ namespace extOSC.Examples
 	public class OSCController : MonoBehaviour
 	{
 		public PlayerMovement playerMovement;
-		// public GameObject ProgrammingEnv;
-		// public GameObject BEController;
-		// public GameObject mainPanel;
-		// public Text menuMessage;
+	
 
 		#region Private Vars
 
@@ -34,11 +31,10 @@ namespace extOSC.Examples
 		// boolean tracks whether program is running, ensures that only one program runs when the user presses run
 		private bool isRunning = false;
 
-		// width and height of viewport in unity
-		//public const float UNITY_WIDTH = (float)949.0001;
+		
 		public float UNITY_WIDTH = Screen.width;
 		public float UNITY_HEIGHT = Screen.height;
-		//public const float UNITY_HEIGHT = (float)533.6231;
+		
 
 		#endregion
 
@@ -57,6 +53,18 @@ namespace extOSC.Examples
 			StartCoroutine(ExecuteBlocks(testBlocks));
 		}
 
+	[ContextMenu("Test: Incorrect Path")]
+		public void TestIncorrectPath()
+		{
+			List<string> testBlocks = new List<string>(){
+
+				"Right",
+				"Forward",
+				"Forward"
+
+			};
+			StartCoroutine(ExecuteBlocks(testBlocks));
+		}
 		protected virtual void Start()
 		{
 			Debug.Log(Screen.width);
@@ -70,8 +78,7 @@ namespace extOSC.Examples
 			// Set remote port;
 			_transmitter.RemotePort = 31415;
 
-			// transmitter will always be inactive unless there is a message to send
-			//_transmitter.enabled = false;
+	
 
 			// Creating a receiver.
 			_receiver = gameObject.AddComponent<OSCReceiver>();
@@ -166,12 +173,6 @@ namespace extOSC.Examples
 			}
 		}
 
-		// protected void Startup()
-		// {
-		// 	//_transmitter.enabled = true;
-		// 	string[] msgs = {"start"};
-		// 	MessageSent("/req", msgs, RECEIVE);
-		// }
 
 		protected void HandleProgram(OSCMessage message)
 		{
@@ -193,7 +194,6 @@ namespace extOSC.Examples
 			{
 				Debug.Log("Received " + blockList.Count + " blocks: ");
 				
-				// TODO: Send the blockList to movement script
 				// the use of coroutine allows there to be a delay between each block
 				StartCoroutine(ExecuteBlocks(blockList));
 				
@@ -211,6 +211,9 @@ namespace extOSC.Examples
 			}
 			// creates a lock so that only one coroutine can run at a time
 			isRunning = true;
+			// reset when there is new blocks
+			playerMovement.offPath = false;
+
 			
 			foreach (string block in blockList)
 			{
@@ -234,8 +237,10 @@ namespace extOSC.Examples
 					playerMovement.TurnLeft();
 					yield return new WaitForSeconds(0.2f);
 				}
-				
 			}
+			
+			// Did the player reach the goal
+			GameManager.Instance.Result();
 			isRunning = false;
 		}
 		
