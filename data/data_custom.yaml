@@ -1,0 +1,6 @@
+train: ./data/train
+val: ./data/val
+
+nc: 6
+
+names: ["Repeat until", "Forward", "Left", "Right", "End loop", "When clicked"]

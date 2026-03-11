@@ -177,9 +177,9 @@ namespace extOSC.Examples
 		protected void HandleProgram(OSCMessage message)
 		{
 			Debug.Log("PROGRAM RECEIVED");
-
+			// SaveLoadCode fileSaver = ProgrammingEnv.GetComponent<SaveLoadCode>();
 			List<string> blockList = new List<string>();
-
+			
 			// loop through osc message to create list of block names
 			foreach (var value in message.Values) {
 				blockList.Add(value.StringValue.Trim());
