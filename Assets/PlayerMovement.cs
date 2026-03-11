@@ -8,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
     public float step = 1f;
     public float speed = 1f;
     public Tilemap pathTilemap;
+    public bool offPath = false;
 
     private Animator animator;
     private Rigidbody2D rb;
@@ -80,7 +81,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (tile == null){
             Debug.Log("Dog has left the path");
-
+            offPath = true;
             // TODO: Add a wrong block order try again
         }
 
@@ -120,5 +121,14 @@ public class PlayerMovement : MonoBehaviour
                 PlayAnimation("Idle_Left");
                 break;
         }
+    }
+
+    public void ResetDirection(){
+        // this is the default direction, we set it back to default
+        currentDirection = Direction.Up;
+        // reset offpath for next run
+        offPath = false; 
+        // resets the visual animation
+        UpdateIdleAnimation();
     }
 }
