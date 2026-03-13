@@ -51,6 +51,7 @@ class BlockDetector:
             if not ret:
                 continue
 
+            frame = cv2.rotate(frame, cv2.ROTATE_180)
             results = model(frame, verbose=False, conf=confidence)
 
             blocks = []
