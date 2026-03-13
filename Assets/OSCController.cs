@@ -1,7 +1,6 @@
 ﻿/* Copyright (c) 2020 ExT (V.Sigalkin) */
 
 using UnityEngine;
-using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -10,7 +9,6 @@ namespace extOSC.Examples
 	public class OSCController : MonoBehaviour
 	{
 		public PlayerMovement playerMovement;
-	
 
 		#region Private Vars
 
@@ -18,9 +16,7 @@ namespace extOSC.Examples
 
 		private OSCReceiver _receiver;
 
-		private const string _oscAddress = "/*"; 
-
-		private string noBlocksMessage = "No blocks detected!\nPlease make sure the blocks are properly aligned.";
+		private const string _oscAddress = "/program"; 
 
 		// states
 		private int state;
@@ -28,13 +24,8 @@ namespace extOSC.Examples
 		private const int STARTUP = 3;
 		private const int QUIT = 4;
 
-		// boolean tracks whether program is running, ensures that only one program runs when the user presses run
+		// tracks whether program is running, ensures that only one program runs when the user presses run
 		private bool isRunning = false;
-
-		
-		public float UNITY_WIDTH = Screen.width;
-		public float UNITY_HEIGHT = Screen.height;
-		
 
 		#endregion
 
@@ -71,43 +62,30 @@ namespace extOSC.Examples
 			Debug.Log(Screen.height);
 			// Creating a transmitter.
 			_transmitter = gameObject.AddComponent<OSCTransmitter>();
-
-			// Set remote host address.
 			_transmitter.RemoteHost = "127.0.0.1";
-
-			// Set remote port;
 			_transmitter.RemotePort = 31415;
 
-	
-
-			// Creating a receiver.
+			// Setup Receiver (Python to Unity)
 			_receiver = gameObject.AddComponent<OSCReceiver>();
-
-			// Set local port.
 			_receiver.LocalPort = 7001;
-
-			// Bind "MessageReceived" method to special address.
 			_receiver.Bind(_oscAddress, MessageReceived);
 
-			state = STARTUP;
+			// Initial State
+			state = RECEIVE;
+
+			// Trigger computer vision capture
+			SendCaptureRequest();
 		}
 
-		protected virtual void Update()
-		{
-			// make state machine to switch between states such as sending, receiving,
-			// and performing ui updates
+		protected virtual void Update() {
 			_transmitter.enabled = false;
-			switch(state)
-			{
-				case STARTUP:
-					//Startup();
-					break;
-				case RECEIVE:
-					break;
-				case QUIT:
-					Debug.Break();
-					break;
-			}
+		}
+
+		public void SendCaptureRequest() {
+			Debug.Log("Unity: Requesting Block Capture from Python...");
+			string[] msgs = { "capture" };
+			// Send message to Python port 31415
+			MessageSent("/req", msgs, RECEIVE);
 		}
 
 		#endregion
@@ -151,8 +129,7 @@ namespace extOSC.Examples
 			state = newState;
 		}
 
-		protected void MessageReceived(OSCMessage message)
-		{
+		protected void MessageReceived(OSCMessage message) {
 			// use address to find out what kind of message it is and
 			// call the proper handler method
 			if (message.Address == "/program") {
@@ -162,43 +139,36 @@ namespace extOSC.Examples
 				else
 					Debug.Log("NOT IN RECEIVE STATE");
 			}
-			else if (message.Address == "/err")
-			{
+			else if (message.Address == "/err") {
 				Debug.Log(message);
 			}
-			else
-			{
+			else {
 				Debug.Log("Address not recognized.");
 				Debug.Log(message.Address);
 			}
 		}
 
+		protected void Startup()
+		{
+			string[] msgs = {"start"};
+			MessageSent("/req", msgs, RECEIVE);
+		}
 
 		protected void HandleProgram(OSCMessage message)
 		{
-			Debug.Log("PROGRAM RECEIVED");
-			// SaveLoadCode fileSaver = ProgrammingEnv.GetComponent<SaveLoadCode>();
 			List<string> blockList = new List<string>();
-			
+
 			// loop through osc message to create list of block names
 			foreach (var value in message.Values) {
 				blockList.Add(value.StringValue.Trim());
 				Debug.Log("Block detected: " + value.StringValue.Trim());
 			}
 
-			if (blockList.Count == 0)
-			{
+			if (blockList.Count == 0) {
 				Debug.Log("No blocks detected!");
+			} else {
+				StartCoroutine(ExecuteBlocks(blockList));	
 			}
-			else
-			{
-				Debug.Log("Received " + blockList.Count + " blocks: ");
-				
-				// the use of coroutine allows there to be a delay between each block
-				StartCoroutine(ExecuteBlocks(blockList));
-				
-			}
-
 			state = STARTUP;
 		}
 
@@ -215,12 +185,7 @@ namespace extOSC.Examples
 			playerMovement.offPath = false;
 
 			
-			foreach (string block in blockList)
-			{
-				// if (block == "When clicked"){
-				// 	run = true;
-				// 	continue;
-				// }
+			foreach (string block in blockList) {
 				if (block == "Forward"){
 
 					// waits for this movement to finish before moving on to next block

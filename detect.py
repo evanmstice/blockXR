@@ -4,6 +4,7 @@ import threading
 from ultralytics import YOLO
 
 model = YOLO("block_weights.pt")
+confidence = 0.7
 
 """CLASSES + THREADING"""
 
@@ -50,7 +51,8 @@ class BlockDetector:
             if not ret:
                 continue
 
-            results = model(frame, verbose=False)
+            frame = cv2.rotate(frame, cv2.ROTATE_180)
+            results = model(frame, verbose=False, conf=confidence)
 
             blocks = []
             for r in results:
@@ -63,7 +65,7 @@ class BlockDetector:
                 self.latest_blocks = blocks
 
                 if self.debug:
-                    # Make a copy for drawing
+                    # Make a copy of capture for drawing
                     frame_copy = frame.copy()
 
                     # Draw raw YOLO boxes
@@ -164,7 +166,7 @@ def make_table(frame, blocks):
 
     return frame
 
-"""BLOCK DATA SANITIZATION"""
+"""BLOCK DATA ORDERING"""
 
 def updateToleranceY(blocks):
     if blocks:
@@ -196,29 +198,20 @@ def getBlocks(data):
             )
         )
 
+    if not blocks:
+        return []
+
     blocks.sort(key=lambda b: b.yPosTop)
 
     toleranceY = updateToleranceY(blocks)
     toleranceX = updateToleranceX(blocks)
 
     codeBlocksFinal = []
+    
+    currXPos = blocks[0].xPos
+    currYPos = blocks[0].yPosBottom
 
-    whenClickedIndice = next(
-        (i for i, b in enumerate(blocks) if b.name == "When clicked"),
-        None
-    )
-
-    if whenClickedIndice is None:
-        raise KeyError("When clicked block not found.")
-
-    codeBlocksFinal.append(
-        ["When clicked", blocks[whenClickedIndice].confidence]
-    )
-
-    currXPos = blocks[whenClickedIndice].xPos
-    currYPos = blocks[whenClickedIndice].yPosBottom
-
-    for block in blocks[whenClickedIndice + 1:]:
+    for block in blocks:
 
         if (
             (currYPos - toleranceY <= block.yPosTop <= currYPos + toleranceY)
@@ -232,71 +225,6 @@ def getBlocks(data):
             break
 
     return codeBlocksFinal
-
-# Main Detection Function
-def detect_blocks(debug=False):
-
-    cap = cv2.VideoCapture(0)
-
-    configure_camera(cap)
-
-    if debug:
-        time.sleep(1.0)
-
-    while True:
-
-        ret, frame = cap.read()
-        if not ret:
-            break
-
-        results = model(frame, stream=True, verbose=False)
-        blocks = []
-
-        if results:
-            for r in results:
-                boxes = r.boxes
-
-                if debug:
-                    for box in boxes:
-                        x1, y1, x2, y2 = box.xyxy[0]
-                        x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
-
-                        conf = box.conf[0].item()
-                        cls = int(box.cls[0].item())
-                        label = model.names[cls]
-
-                        cv2.rectangle(frame, (x1, y1), (x2, y2),
-                                    (0, 255, 0), 2)
-
-                        cv2.putText(frame,
-                                    f"{label} {conf:.2f}",
-                                    (x1, y1 - 10),
-                                    cv2.FONT_HERSHEY_PLAIN,
-                                    0.7,
-                                    (0, 255, 0),
-                                    1)
-
-                try:
-                    blocks = getBlocks(boxes)
-                except KeyError:
-                    blocks = []
-
-            if debug:
-                frame = make_table(frame, blocks)
-                frame = rescale_frame(frame, percent=75)
-                cv2.imshow("Live Feed", frame)
-
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-            else:
-                cap.release()
-                return blocks
-
-        cap.release()
-        cv2.destroyAllWindows()
-
-        return blocks
-
 
 # Running this script directly will enter the visual debugger
 if __name__ == "__main__":
