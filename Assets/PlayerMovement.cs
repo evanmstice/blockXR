@@ -1,4 +1,5 @@
 using UnityEngine;
+
 using System.Collections;
 using UnityEngine.Tilemaps;
 
@@ -13,7 +14,7 @@ public class PlayerMovement : MonoBehaviour
     private Animator animator;
     private Rigidbody2D rb;
     
-
+    public bool isMoving = false;
     public enum Direction
     {
         Up,
@@ -33,8 +34,9 @@ public class PlayerMovement : MonoBehaviour
 
     public IEnumerator MoveForward()
     {
-
         Vector3 movementDirection = Vector3.zero;
+        isMoving = true;
+        GameManager.Instance.runButton.interactable = false;
 
         switch (currentDirection)
         {
@@ -86,6 +88,8 @@ public class PlayerMovement : MonoBehaviour
         }
 
     UpdateIdleAnimation();
+    GameManager.Instance.runButton.interactable = true;
+    isMoving = false;
     }
     public void TurnRight(){
         currentDirection = (Direction)(((int)currentDirection + 1) % 4);
