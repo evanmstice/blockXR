@@ -4,12 +4,11 @@ public class Boundary : MonoBehaviour
 {
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.tag == "Player")
+        if (collision.CompareTag("Player"))
         {
             Debug.Log("Player hit boundary");
 
             Rigidbody2D rb = collision.GetComponent<Rigidbody2D>();
-            PlayerMovement movement = collision.GetComponent<PlayerMovement>();
             // if the player collides with the bound
             // move the player back to the nearest tile, stop movement
             if (rb != null)

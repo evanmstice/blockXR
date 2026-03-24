@@ -6,7 +6,7 @@ public class Goal : MonoBehaviour
     {
         // there is an empty game object called goal, when it collides with the player
         // it triggers the cutscene
-        if (collision.tag == "Player")
+        if (collision.CompareTag("Player"))
         {
             Debug.Log("Player reached goal");
             GameManager.Instance.GoalReached();
