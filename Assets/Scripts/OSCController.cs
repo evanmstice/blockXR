@@ -10,12 +10,8 @@ namespace extOSC.Examples
 	{
 		public PlayerMovement playerMovement;
 
-		#region Private Vars
-
 		private OSCTransmitter _transmitter;
-
 		private OSCReceiver _receiver;
-
 		private const string _oscAddress = "/program"; 
 
 		// states
@@ -26,10 +22,6 @@ namespace extOSC.Examples
 
 		// tracks whether program is running, ensures that only one program runs when the user presses run
 		private bool isRunning = false;
-
-		#endregion
-
-		#region Unity Methods
 
 		//TESTING CODE
 		[ContextMenu("Test: Move Forward")]
@@ -56,10 +48,9 @@ namespace extOSC.Examples
 			};
 			StartCoroutine(ExecuteBlocks(testBlocks));
 		}
-		protected virtual void Start()
+		protected virtual void Awake()
 		{
-			Debug.Log(Screen.width);
-			Debug.Log(Screen.height);
+			DontDestroyOnLoad(gameObject);
 			// Creating a transmitter.
 			_transmitter = gameObject.AddComponent<OSCTransmitter>();
 			_transmitter.RemoteHost = "127.0.0.1";
@@ -78,7 +69,8 @@ namespace extOSC.Examples
 		}
 
 		protected virtual void Update() {
-			_transmitter.enabled = false;
+			if (_transmitter != null)
+        		_transmitter.enabled = false;
 		}
 
 		public void SendCaptureRequest() {
@@ -87,10 +79,6 @@ namespace extOSC.Examples
 			// Send message to Python port 31415
 			MessageSent("/req", msgs, RECEIVE);
 		}
-
-		#endregion
-
-		#region Protected Methods
 
 		public void UpdateState(string newState)
 		{
@@ -181,6 +169,13 @@ namespace extOSC.Examples
 			}
 			// creates a lock so that only one coroutine can run at a time
 			isRunning = true;
+
+			if (playerMovement == null)
+            {
+                Debug.LogWarning("OSCController: playerMovement is not assigned yet");
+                isRunning = false;
+                yield break;
+            }
 			// reset when there is new blocks
 			playerMovement.offPath = false;
 
@@ -209,7 +204,5 @@ namespace extOSC.Examples
 			isRunning = false;
 		}
 		
-
-		#endregion
 	}
 }

@@ -8,36 +8,66 @@ using TMPro;
 public class GameManager : MonoBehaviour { 
     // game manager can be accessed from anywhere
     public static GameManager Instance;
-
-    [Header("UI")]
-    // this panel is dragged in from the inspector, it get activated when player goes off path
-    public GameObject tryAgainPanel;
-    public TextMeshProUGUI tryAgainText;
-    public Button runButton;
-
-    [Header("Player")]
-    public Transform player;
-    // this will save the initial position of the player when the game starts
+    private GameObject tryAgainPanel;
+    private TextMeshProUGUI tryAgainText;
+    private Button runButton;
+    private Transform player;
     private Vector3 playerInitialPosition;
-    // at the beginning of each run this will be set to false
     private bool goalReached = false;
 
 
     // this sets up the game manager... if there is no game manger, it creates one... if one already exists, it destroys it
-    private void Awake () 
-    { 
-        if (Instance == null)
-            Instance = this; 
-        else
+    private void Awake () { 
+        if (Instance == null) {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); 
+        } else {
             Destroy(gameObject);
+        }
     }
 
-    void Start () {
-        // set the initial position of the player, this will be the reset position
-        playerInitialPosition = player.position;
+    void OnEnable() {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
 
-        // hide the try again panel at the start of the game
+    void OnDisable() {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    // resets references every time a new scene loads
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
+        goalReached = false;
+    }
+
+    // called by Player on Start()
+    public void RegisterPlayer(Transform p)
+    {
+        player = p;
+        playerInitialPosition = player.position;
+    }
+
+    // called by TryAgainPanel on Start()
+    public void RegisterTryAgainPanel(GameObject panel)
+    {
+        Debug.Log("RegisterTryAgainPanel called with: " + panel.name);
+        tryAgainPanel = panel;
+        tryAgainText = panel.GetComponentInChildren<TextMeshProUGUI>();
         tryAgainPanel.SetActive(false);
+        Debug.Log("tryAgainPanel is now: " + (tryAgainPanel != null ? "set" : "null"));
+
+    }
+
+    // called by RunButton on Start()
+    public void RegisterRunButton(Button button)
+    {
+        runButton = button;
+    }
+
+    // called by PlayerMovement instead of accessing runButton directly
+    public void SetRunButton(bool interactable)
+    {
+        if (runButton != null)
+            runButton.interactable = interactable;
     }
 
     // wjen the player collides with the goal, this will be called
@@ -47,12 +77,14 @@ public class GameManager : MonoBehaviour {
     }
 
     public void ShowTryAgainPanel(string message) {
+        Debug.Log("ShowTryAgainPanel called, panel is: " + (tryAgainPanel != null ? "found" : "null"));
+        if (tryAgainPanel == null) return;
         tryAgainText.text = message;
         tryAgainPanel.SetActive(true);
     }
 
     public void Result() {
-        runButton.interactable = false;
+        if (runButton != null) runButton.interactable = false;
         PlayerMovement movement = player.GetComponent<PlayerMovement>();
         if (movement.isMoving) return;
 
@@ -79,8 +111,8 @@ public class GameManager : MonoBehaviour {
 
     public void ClickedTryAgain() {
         // hiding the try again panel
-        tryAgainPanel.SetActive(false);
-        runButton.interactable = true;
+        if (tryAgainPanel != null) tryAgainPanel.SetActive(false);
+        if (runButton != null) runButton.interactable = true;
 
         // to snap the player back to the initial position
         Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
