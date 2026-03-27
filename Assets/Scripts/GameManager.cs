@@ -103,6 +103,8 @@ public class GameManager : MonoBehaviour {
     private IEnumerator LoadCutscene() {
         yield return new WaitForSeconds(1f);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        yield return new WaitForSeconds(1f);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 
     public void TriggerTryAgain() {

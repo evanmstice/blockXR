@@ -48,6 +48,34 @@ namespace extOSC.Examples
 			};
 			StartCoroutine(ExecuteBlocks(testBlocks));
 		}
+
+	[ContextMenu("Test: Level 2")]
+		public void TestLevel2()
+		{
+			List<string> testBlocks = new List<string>(){
+
+				"Left",
+				"Forward",
+				"Right",
+				"Forward",
+				"Forward"
+
+			};
+			StartCoroutine(ExecuteBlocks(testBlocks));
+		}	
+
+		[ContextMenu("Test: Level 3")]
+		public void TestLevel3()
+		{
+			List<string> testBlocks = new List<string>(){
+
+				"Repeat until",
+				"Forward",
+				"End loop"
+
+			};
+			StartCoroutine(ExecuteBlocks(testBlocks));
+		}	
 		protected virtual void Awake()
 		{
 			DontDestroyOnLoad(gameObject);
@@ -161,47 +189,95 @@ namespace extOSC.Examples
 		}
 
 		// coroutine to execute the list of blocks with delays between each block
-		private IEnumerator ExecuteBlocks(List<string> blockList)
+		private IEnumerator ExecuteBlocks(List<string> blockList, bool loop = false)
 		{
-			// stops overlapping coroutines
-			if(isRunning == true){
-				yield break;
-			}
-			// creates a lock so that only one coroutine can run at a time
-			isRunning = true;
+			// stop overlapping coroutines, and allows for loops to run 
+			if(loop == false){
+				if(isRunning == true){
+					yield break;
+				}
 
-			if (playerMovement == null)
+				// creates a lock so that only one coroutine can run at a time
+				isRunning = true;
+				if (playerMovement == null)
             {
                 Debug.LogWarning("OSCController: playerMovement is not assigned yet");
                 isRunning = false;
                 yield break;
             }
 			// reset when there is new blocks
-			playerMovement.offPath = false;
+				playerMovement.offPath = false;
 
+				bool whileLoop = blockList.Contains("Repeat until");
+				bool endLoop = blockList.Contains("End loop");
+
+				if (whileLoop && !endLoop){
+					Debug.Log("While loop does not have an end loop attached");
+					GameManager.Instance.ShowTryAgainPanel("OOPS!\nYOU ARE MISSING\nAN END LOOP BLOCK!");
+					isRunning = false;
+					yield break;
+				}
 			
-			foreach (string block in blockList) {
+			}
+
+			int i = 0;
+			while (i < blockList.Count)
+			{
+				string block = blockList[i];
+
 				if (block == "Forward"){
 
 					// waits for this movement to finish before moving on to next block
 					yield return StartCoroutine(playerMovement.MoveForward());
 					yield return new WaitForSeconds(0.2f);
+					i++;
 				}
-				if (block == "Right")
+				else if (block == "Right")
 				{
 					playerMovement.TurnRight();
 					yield return new WaitForSeconds(0.2f);
+					i++;
 				}
-				if (block == "Left")
+				else if (block == "Left")
 				{
 					playerMovement.TurnLeft();
 					yield return new WaitForSeconds(0.2f);
+					i++;
+				} else if(block == "Repeat until"){
+					// find the end loop
+					int endLoopIndex = blockList.IndexOf("End loop", i);
+
+					// blocks inside the loop
+					List<string> loopBlockList = blockList.GetRange(i + 1, endLoopIndex - i - 1);
+
+					// get loop count for the current level, default is one for levels that do not require a loop
+
+					LevelData levelData = FindAnyObjectByType<LevelData>();
+		
+					int loopCount;
+					if(levelData != null){
+						loopCount = levelData.loopCount;
+					} else {
+						loopCount = 1;
+					}
+
+					for(int j = 0; j< loopCount; j++){
+						yield return StartCoroutine(ExecuteBlocks(loopBlockList, true));
+					}
+
+					// skip over the end loop
+					i = endLoopIndex + 1;
+				} else{
+					i++;
 				}
 			}
 			
 			// Did the player reach the goal
-			GameManager.Instance.Result();
-			isRunning = false;
+			if(loop == false){
+				GameManager.Instance.Result();
+				isRunning = false;
+			}
+			
 		}
 		
 	}
