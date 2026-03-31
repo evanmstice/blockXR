@@ -51,9 +51,11 @@ public class PlayerMovement : MonoBehaviour
         else
             Debug.LogWarning("PlayerMovement: OSCController not found");
 
-        GameObject tilemapObj = GameObject.Find("MazePath");
-        if (tilemapObj != null)
+        GameObject tilemapObj = GameObject.Find("Grid/MazePath");
+        if (tilemapObj != null) {
             pathTilemap = tilemapObj.GetComponent<Tilemap>();
+            Debug.Log("MazePath found! Tilemap: " + (pathTilemap != null ? "assigned" : "missing Tilemap component"));
+        }
         else
             Debug.LogWarning("PlayerMovement: MazePath not found in scene");
     }
@@ -158,5 +160,9 @@ public class PlayerMovement : MonoBehaviour
         offPath = false; 
         // resets the visual animation
         UpdateIdleAnimation();
+    }
+
+    public void PlayCutsceneAnimation(string animationName) {
+        PlayAnimation(animationName);
     }
 }

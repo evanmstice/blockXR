@@ -86,6 +86,8 @@ public class GameManager : MonoBehaviour {
     public void Result() {
         if (runButton != null) runButton.interactable = false;
         PlayerMovement movement = player.GetComponent<PlayerMovement>();
+            Debug.Log("offPath: " + movement.offPath + " | goalReached: " + goalReached);
+
         if (movement.isMoving) return;
 
         if (movement.offPath) {
@@ -101,8 +103,6 @@ public class GameManager : MonoBehaviour {
     }
 
     private IEnumerator LoadCutscene() {
-        yield return new WaitForSeconds(1f);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         yield return new WaitForSeconds(1f);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }

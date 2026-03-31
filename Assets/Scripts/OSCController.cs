@@ -229,7 +229,12 @@ namespace extOSC.Examples
 
 					// waits for this movement to finish before moving on to next block
 					yield return StartCoroutine(playerMovement.MoveForward());
-					yield return new WaitForSeconds(0.2f);
+					if (playerMovement.offPath) {
+						GameManager.Instance.Result();
+						isRunning = false;
+						yield break;
+					}
+					yield return new WaitForSeconds(0.5f);
 					i++;
 				}
 				else if (block == "Right")
