@@ -9,6 +9,12 @@ EditorBuildSettings:
     path: Assets/Scenes/_BOOTSTRAP.unity
     guid: 91e46f2f8991b4e258e1c58cd5ad843b
   - enabled: 1
+    path: Assets/Scenes/a_Intro_1.unity
+    guid: 04dccc419a7c04b9caf153469efb7061
+  - enabled: 1
+    path: Assets/Scenes/a_Intro_2.unity
+    guid: 16dc86419e850483aab8f9077e0b4ed9
+  - enabled: 1
     path: Assets/Scenes/Level_01.unity
     guid: ba8940b304ba61545b1d930934f55690
   - enabled: 1
@@ -24,7 +30,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Level_03.unity
     guid: ca213dc670771c548b23344dad3efd52
   - enabled: 1
-    path: Assets/Scenes/Cutscene_03.unity
+    path: Assets/Scenes/z_FINISH.unity
     guid: 0f64c81b065ce8c48a69223af20d652d
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100,
