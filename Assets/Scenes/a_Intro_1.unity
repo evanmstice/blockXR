@@ -582,6 +582,9 @@ MonoBehaviour:
   animationMode: 1
   walkLeftDuration: 0.6
   walkRightDuration: 0.6
+  walkUpDuration: 1
+  walkUpDistance: 2
+  snapBackDelay: 0.2
 --- !u!4 &901025432
 Transform:
   m_ObjectHideFlags: 0
@@ -633,12 +636,12 @@ PrefabInstance:
     - target: {fileID: 8846654249631907081, guid: 52dcee46cd7ad4154a9b9baa4e22bca7,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.14
+      value: 0.09
       objectReference: {fileID: 0}
     - target: {fileID: 8846654249631907081, guid: 52dcee46cd7ad4154a9b9baa4e22bca7,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.27
+      value: 0.9
       objectReference: {fileID: 0}
     - target: {fileID: 8846654249631907081, guid: 52dcee46cd7ad4154a9b9baa4e22bca7,
         type: 3}
@@ -784,7 +787,7 @@ Transform:
   m_GameObject: {fileID: 1677195844}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.03, y: 1.33, z: 0}
+  m_LocalPosition: {x: 0.03, y: 0.95, z: 0}
   m_LocalScale: {x: 3.5, y: 3.5000002, z: 3.5000002}
   m_ConstrainProportionsScale: 1
   m_Children: []

@@ -102,9 +102,10 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    private IEnumerator LoadCutscene() {
-        yield return new WaitForSeconds(1f);
+    public IEnumerator LoadCutscene() {
+        yield return StartCoroutine(CircleWipeController.Instance.WipeOut());
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        yield return StartCoroutine(CircleWipeController.Instance.WipeIn());
     }
 
     public void TriggerTryAgain() {

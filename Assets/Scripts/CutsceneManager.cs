@@ -121,8 +121,6 @@ public class CutsceneManager : MonoBehaviour
         if (playerMovement != null)
             playerMovement.PlayCutsceneAnimation("Idle_Down");
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene(
-            UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex + 1
-        );
+        StartCoroutine(GameManager.Instance.LoadCutscene());
     }
 }
