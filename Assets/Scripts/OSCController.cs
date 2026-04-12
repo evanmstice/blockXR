@@ -36,6 +36,19 @@ namespace extOSC.Examples
 			StartCoroutine(ExecuteBlocks(testBlocks));
 		}
 
+		[ContextMenu("Test: Bone Respawn")]
+		public void TestBoneRespawn()
+		{
+			List<string> testBlocks = new List<string>(){
+
+				"Forward",
+				"Left",
+				"Forward"
+
+			};
+			StartCoroutine(ExecuteBlocks(testBlocks));
+		}
+
 	[ContextMenu("Test: Incorrect Path")]
 		public void TestIncorrectPath()
 		{
