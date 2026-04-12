@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using TMPro;
 
@@ -14,6 +15,7 @@ public class GameManager : MonoBehaviour {
     private Transform player;
     private Vector3 playerInitialPosition;
     private bool goalReached = false;
+    private List<Bone> registeredBones = new List<Bone>();
 
 
     // this sets up the game manager... if there is no game manger, it creates one... if one already exists, it destroys it
@@ -37,6 +39,7 @@ public class GameManager : MonoBehaviour {
     // resets references every time a new scene loads
     void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
         goalReached = false;
+        registeredBones.Clear();
     }
 
     // called by Player on Start()
@@ -44,6 +47,22 @@ public class GameManager : MonoBehaviour {
     {
         player = p;
         playerInitialPosition = player.position;
+    }
+
+    // called by each on Start()
+    public void RegisterBone(Bone bone)
+    {
+        if(!registeredBones.Contains(bone)){
+            registeredBones.Add(bone);
+        }
+
+    }
+
+    public void ResetBones(){
+        foreach (Bone bone in registeredBones){
+            if (bone != null) 
+                bone.gameObject.SetActive(true);
+        }
     }
 
     // called by TryAgainPanel on Start()
@@ -128,6 +147,8 @@ public class GameManager : MonoBehaviour {
         goalReached = false;
         // resets the player direction
         player.GetComponent<PlayerMovement>().ResetDirection();
+        // resets the bones
+        ResetBones();
 
     }
 
