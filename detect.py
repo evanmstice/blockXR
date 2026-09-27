@@ -226,7 +226,7 @@ def getBlocks(data):
 
     return codeBlocksFinal
 
-# Running this script directly will enter the visual debugger
+# Running this script directly will enter the visual debugger (press q to quit)
 if __name__ == "__main__":
     detector = BlockDetector(debug=True)
     detector.start()
