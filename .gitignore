@@ -4,7 +4,12 @@ runs/
 data/train/labels.cache
 data/val/labels.cache
 .venv/
+venv/
 .DS_Store
+.blockxr_frame.jpg
+.blockxr_frame.jpg.tmp
+.blockxr_yolo_debug.jpg
+.blockxr_yolo_debug.jpg.tmp
 
 ## UNITY GITIGNORE ##
 

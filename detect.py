@@ -1,4 +1,5 @@
 import cv2
+import os
 import time
 import threading
 from ultralytics import YOLO
@@ -17,15 +18,28 @@ class Block:
         self.confidence = confidence
 
 class BlockDetector:
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, frame_path=None, debug_frame_path=None):
         self.debug = debug
-        self.cap = cv2.VideoCapture(0)
-        configure_camera(self.cap)
-
+        self.frame_path = frame_path
+        self.debug_frame_path = debug_frame_path
+        self.cap = None
         self.running = False
         self.latest_blocks = []
         self.latest_frame = None
         self.lock = threading.Lock()
+
+        if frame_path:
+            # Unity owns the webcam (macOS TCC). We only read JPEG frames.
+            return
+
+        import sys
+        if sys.platform == "darwin" and hasattr(cv2, "CAP_AVFOUNDATION"):
+            self.cap = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
+            if not self.cap.isOpened():
+                self.cap = cv2.VideoCapture(0)
+        else:
+            self.cap = cv2.VideoCapture(0)
+        configure_camera(self.cap)
 
     def start(self):
         self.running = True
@@ -33,7 +47,8 @@ class BlockDetector:
 
     def stop(self):
         self.running = False
-        self.cap.release()
+        if self.cap is not None:
+            self.cap.release()
         cv2.destroyAllWindows()
 
     def get_blocks(self):
@@ -45,13 +60,41 @@ class BlockDetector:
         with self.lock:
             return self.latest_frame.copy() if self.latest_frame is not None else None
 
+    def _read_frame(self):
+        if self.frame_path:
+            try:
+                frame = cv2.imread(self.frame_path)
+            except Exception:
+                return None
+            return frame
+
+        if self.cap is None:
+            return None
+        ret, frame = self.cap.read()
+        return frame if ret else None
+
     def _run(self):
+        last_mtime = None
         while self.running:
-            ret, frame = self.cap.read()
-            if not ret:
+            if self.frame_path:
+                try:
+                    mtime = os.path.getmtime(self.frame_path)
+                except OSError:
+                    time.sleep(0.1)
+                    continue
+                if mtime == last_mtime:
+                    time.sleep(0.05)
+                    continue
+                last_mtime = mtime
+
+            frame = self._read_frame()
+            if frame is None:
+                time.sleep(0.05)
                 continue
 
-            frame = cv2.rotate(frame, cv2.ROTATE_180)
+            # Unity WebCamTexture is upright; OpenCV capture historically needed 180°.
+            if self.cap is not None:
+                frame = cv2.rotate(frame, cv2.ROTATE_180)
             results = model(frame, verbose=False, conf=confidence)
 
             blocks = []
@@ -64,32 +107,40 @@ class BlockDetector:
             with self.lock:
                 self.latest_blocks = blocks
 
+            if self.debug or self.debug_frame_path:
+                frame_copy = frame.copy()
+
+                for r in results:
+                    for box in r.boxes:
+                        x1, y1, x2, y2 = map(int, box.xyxy[0])
+                        conf = box.conf[0].item()
+                        cls = int(box.cls[0].item())
+                        label = model.names[cls]
+
+                        cv2.rectangle(frame_copy, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                        cv2.putText(
+                            frame_copy,
+                            f"{label} {conf:.2f}",
+                            (x1, y1 - 10),
+                            cv2.FONT_HERSHEY_PLAIN,
+                            0.7,
+                            (0, 255, 0),
+                            1,
+                        )
+
+                frame_copy = make_table(frame_copy, blocks)
+
                 if self.debug:
-                    # Make a copy of capture for drawing
-                    frame_copy = frame.copy()
+                    self.latest_frame = rescale_frame(frame_copy, 75)
 
-                    # Draw raw YOLO boxes
-                    for r in results:
-                        for box in r.boxes:
-                            x1, y1, x2, y2 = map(int, box.xyxy[0])
-                            conf = box.conf[0].item()
-                            cls = int(box.cls[0].item())
-                            label = model.names[cls]
-
-                            cv2.rectangle(frame_copy, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                            cv2.putText(frame_copy,
-                                        f"{label} {conf:.2f}",
-                                        (x1, y1 - 10),
-                                        cv2.FONT_HERSHEY_PLAIN,
-                                        0.7,
-                                        (0, 255, 0),
-                                        1)
-
-                    # Overlay sanitized table
-                    frame_copy = make_table(frame_copy, blocks)
-                    frame_copy = rescale_frame(frame_copy, 75)
-
-                    self.latest_frame = frame_copy
+                if self.debug_frame_path:
+                    try:
+                        # OpenCV picks the encoder from the file extension — ".tmp" fails.
+                        tmp = self.debug_frame_path + ".write.jpg"
+                        if cv2.imwrite(tmp, frame_copy):
+                            os.replace(tmp, self.debug_frame_path)
+                    except Exception:
+                        pass
 
 """ DEBUG WINDOW FUNCTIONS """
 
