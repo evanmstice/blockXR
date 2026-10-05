@@ -1,17 +1,16 @@
 # blockXR
 
-BlockXR turns block programming into something you can hold and play. Guided by narrative storytelling, it supports programming education and cognitive development with a tangible interface: place physical blocks on a mat, and computer vision detects them so they drive a 2D Unity game projected onto that same surface.
+BlockXR turns block programming into something you can hold and play. Guided by narrative storytelling, it supports programming education and cognitive development with a tangible interface. The user places physical blocks on a mat and computer vision detects them, driving a 2D Unity game projected onto that same surface.
 
-We built it to study how an interactive, story-driven programming experience affects cognitive abilities — designed for low cognitive load so it stays approachable without losing engagement.
+This project studies how an interactive, story-driven programming experience affects cognitive abilities. It is designed for low cognitive load so it stays approachable without losing engagement.
 
-The Unity game talks to a webcam-based YOLO detector over OSC.
+The Unity game talks to a camera based OpenCV detector over OSC.
 
 ## Prerequisites
 
 - [Unity](https://unity.com/download) **6000.1.3f1** (see `ProjectSettings/ProjectVersion.txt`)
 - Python 3.12+ on PATH (`python3 --version`)
 - Webcam + blockXR physical platform
-
 
 
 ## Setup (once per machine)
