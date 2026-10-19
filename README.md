@@ -61,3 +61,18 @@ Windows: Python opens the webcam directly (no extra Camera toggle for a Unity wr
 ### Gameplay
 
 Currently, a mouse must be used throughout gameplay to click the UI buttons (RUN, TRY AGAIN, etc). Future development is planned to remove this dependency and instead advance the game based on gestures or other physical interface features. Clicking the run button captures the current blocks detected via the webcam and passes these to the Unity frontend.
+
+## Google Blockly Integration (beta)
+
+As a part of our ongoing research, we have linked our backend with Google's Blockly platform. This runs in a React web app, and gives the user the option to play on the computer with typical drag-and-drop block programming functionality, or by using the computer vision backend. This will be used for further testing on the effectivity of tangible learning.
+
+### Usage - Google Blockly + BlockXR (beta)
+
+Ensure your virtual environment is active, then run these commands from the BlockXR directory.
+
+```bash
+cd web
+npm start
+```
+
+The game can be run entirely through localhost on your browser.
