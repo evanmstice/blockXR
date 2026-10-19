@@ -5,6 +5,7 @@
 
 from detect import BlockDetector
 import python_osc_server
+import python_http_server
 import os
 import threading
 import signal
@@ -64,6 +65,14 @@ if __name__ == "__main__":
         daemon=True,
     )
     server_thread.start()
+
+    http_thread = threading.Thread(
+        target=python_http_server.run_http_server,
+        args=(detector,),
+        daemon=True,
+    )
+    http_thread.start()
+    log("CV_BACKEND_HTTP http://127.0.0.1:8765")
     log("CV_BACKEND_READY")
 
     stop_event = threading.Event()

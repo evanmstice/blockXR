@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>blockXR — Blockly Maze</title>
+  </head>
+  <body>
+    <!-- Start screen -->
+    <div id="startScreen" class="screen">
+      <div class="start-card">
+        <h1>blockXR</h1>
+        <p class="subtitle">Choose test condition</p>
+        <div class="start-actions">
+          <button type="button" id="btnDigital" class="mode-btn">
+            <span class="mode-title">Digital only</span>
+            <span class="mode-desc">Drag-and-drop blocks with mouse and keyboard</span>
+          </button>
+          <button type="button" id="btnPhysical" class="mode-btn">
+            <span class="mode-title">Physical platform</span>
+            <span class="mode-desc">Projected maze + blank mat for tangible blocks</span>
+          </button>
+        </div>
+        <label class="level-pick">
+          Level
+          <select id="levelSelect"></select>
+        </label>
+      </div>
+    </div>
+
+    <!-- Digital mode -->
+    <div id="digitalScreen" class="screen hidden">
+      <header class="toolbar">
+        <button type="button" id="digitalBack" class="tool-btn">Back</button>
+        <span id="digitalLevelName" class="level-name"></span>
+        <button type="button" id="digitalRun" class="tool-btn primary">Run</button>
+        <button type="button" id="digitalReset" class="tool-btn">Reset</button>
+        <span id="digitalStatus" class="status"></span>
+      </header>
+      <div class="digital-layout">
+        <div id="blocklyDiv"></div>
+        <div class="maze-pane">
+          <canvas id="digitalMaze" width="480" height="480"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Physical mode -->
+    <div id="physicalScreen" class="screen hidden">
+      <div class="physical-split">
+        <div class="maze-half">
+          <canvas id="physicalMaze" width="720" height="720"></canvas>
+        </div>
+        <div class="mat-half" aria-label="Physical block placement area"></div>
+      </div>
+      <footer class="physical-controls">
+        <button type="button" id="physicalBack" class="tool-btn">Back</button>
+        <span id="physicalLevelName" class="level-name"></span>
+        <button type="button" id="physicalScan" class="tool-btn primary">Scan &amp; Run</button>
+        <button type="button" id="physicalReset" class="tool-btn">Reset</button>
+        <span id="physicalStatus" class="status"></span>
+        <span id="backendStatus" class="backend-status"></span>
+      </footer>
+    </div>
+  </body>
+</html>
